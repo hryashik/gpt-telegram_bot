@@ -3,6 +3,7 @@ import { Start, Update, Ctx, Message, On } from 'nestjs-telegraf';
 import { ChatgptService } from '@/chatgpt/chatgpt.service';
 import { Scenes, Telegraf } from 'telegraf';
 import { Logger } from '@nestjs/common';
+import { greetings } from './text-templates/greetings';
 
 type Context = Scenes.SceneContext;
 
@@ -17,14 +18,10 @@ export class TelegramService extends Telegraf<Context> {
     }
     @Start()
     onStart(@Ctx() ctx: Context) {
-        ctx.replyWithHTML(`<b>Привет, ${ctx.from.username}</b>
-Это чат бот с ChatGPT!
-Введите любую фразу и получите ответ!
-        `);
+        ctx.replyWithHTML(greetings(ctx.from.username || ctx.from.first_name));
     }
     @On('text')
     onMessage(@Message('text') msg: string, @Ctx() ctx: Context) {
-        this.logger.log(msg);
         return this.gpt.generateResponse(msg);
     }
 }
