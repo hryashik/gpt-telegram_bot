@@ -2,32 +2,13 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { catchError, map, of } from 'rxjs';
-
-interface IGptAnswer {
-    id: string;
-    object: string;
-    created: number;
-    model: string;
-    usage: {
-        prompt_tokens: number;
-        completion_tokens: number;
-        total_tokens: number;
-    };
-    choices: {
-        message: {
-            role: string;
-            content: string;
-        };
-        finish_reason: string;
-        index: number;
-    }[];
-}
+import { IGptResponse } from './interfaces/gptResponse.dto';
 
 @Injectable()
 export class ChatgptService {
     private readonly logger = new Logger(ChatgptService.name);
-    private gptUrl;
-    private apiKey;
+    private gptUrl: string;
+    private apiKey: string;
     constructor(
         private readonly configService: ConfigService,
         private readonly httpService: HttpService,
@@ -45,7 +26,7 @@ export class ChatgptService {
             messages: [{ role: 'user', content }],
             temperature: 1,
         };
-        return this.httpService.post<IGptAnswer>(this.gptUrl, data, { headers }).pipe(
+        return this.httpService.post<IGptResponse>(this.gptUrl, data, { headers }).pipe(
             map(({ data }) => data.choices[0].message.content.trim()),
             catchError((err) => {
                 this.logger.error(err);
